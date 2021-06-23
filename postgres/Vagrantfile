@@ -91,4 +91,9 @@ SELECT * FROM pictures;
 EOM
 
   SHELL
+
+    # listen_addresses = '*' 
+    # ->  /etc/postgresql/12/main/postgres.conf
+    # host    all             all             10.0.2.0/24             md5
+    # -> /etc/postgresql/12/main/pg_hba.conf
 end
