@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi:set ft=ruby sw=2 ts=2 sts=2:
+
+# Define the number of master and worker nodes
+# If this number is changed, remember to update setup-hosts.sh script with the new hosts IP details in /etc/hosts of each VM.
+NUM_MASTER_NODE = 2
+NUM_WORKER_NODE = 2
+
+IP_NW = "192.168.99."
+MASTER_IP_START = 100
+NODE_IP_START = 200
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu2004"
+  config.vm.box_check_update = false
+
+  config.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get upgrade -y 
+  SHELL
+      #sed -i -e 's/#DNS=/DNS=1.1.1.1 9.9.9.9 8.8.8.8/' /etc/systemd/resolved.conf
+      #service systemd-resolved restart
+  #config.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/setup-hosts.sh" 
+  
+  # Provision Master Nodes
+  (1..NUM_MASTER_NODE).each do |i|
+      config.vm.define "kubemaster" do |node|
+        # Name shown in the GUI
+        node.vm.provider "virtualbox" do |vb|
+            vb.name = "kubemaster#{i}"
+            vb.memory = 2048
+            vb.cpus = 2
+        end
+        node.vm.hostname = "kubemaster#{i}"
+        node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START + i}"
+        node.vm.network "forwarded_port", guest: 22, host: "#{2121 + i}"
+      end
+  end
+
+  # Provision Worker Nodes
+  (1..NUM_WORKER_NODE).each do |i|
+    config.vm.define "kubenode0#{i}" do |node|
+        node.vm.provider "virtualbox" do |vb|
+            vb.name = "kubenode0#{i}"
+            vb.memory = 2048
+            vb.cpus = 2
+        end
+        node.vm.hostname = "kubenode0#{i}"
+        node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START + i}"
+        node.vm.network "forwarded_port", guest: 22, host: "#{2221 + i}"
+    end
+  end
+
+end
