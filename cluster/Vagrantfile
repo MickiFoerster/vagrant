@@ -14,40 +14,40 @@ Vagrant.configure("2") do |config|
   config.vm.box = "generic/ubuntu2004"
   config.vm.box_check_update = false
 
-  config.vm.provision "shell", inline: <<-SHELL
-      apt-get update
-      apt-get upgrade -y 
-  SHELL
+  #config.vm.provision "shell", inline: <<-SHELL
+  #    apt-get update
+  #    apt-get upgrade -y 
+  #SHELL
       #sed -i -e 's/#DNS=/DNS=1.1.1.1 9.9.9.9 8.8.8.8/' /etc/systemd/resolved.conf
       #service systemd-resolved restart
   #config.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/setup-hosts.sh" 
   
   # Provision Master Nodes
   (1..NUM_MASTER_NODE).each do |i|
-      config.vm.define "kubemaster" do |node|
-        # Name shown in the GUI
-        node.vm.provider "virtualbox" do |vb|
-            vb.name = "kubemaster#{i}"
-            vb.memory = 2048
-            vb.cpus = 2
-        end
-        node.vm.hostname = "kubemaster#{i}"
-        node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START + i}"
-        node.vm.network "forwarded_port", guest: 22, host: "#{2121 + i}"
+    config.vm.define "kubemaster#{i}" do |master|
+      # Name shown in the GUI
+      master.vm.provider "virtualbox" do |vb|
+        vb.name = "kubemaster#{i}"
+        vb.memory = 2048
+        vb.cpus = 2
       end
+      master.vm.hostname = "kubemaster#{i}"
+      master.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START + i}"
+      master.vm.network "forwarded_port", guest: 22, host: "#{22221 + i}"
+    end
   end
 
   # Provision Worker Nodes
   (1..NUM_WORKER_NODE).each do |i|
-    config.vm.define "kubenode0#{i}" do |node|
-        node.vm.provider "virtualbox" do |vb|
-            vb.name = "kubenode0#{i}"
-            vb.memory = 2048
-            vb.cpus = 2
-        end
-        node.vm.hostname = "kubenode0#{i}"
-        node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START + i}"
-        node.vm.network "forwarded_port", guest: 22, host: "#{2221 + i}"
+    config.vm.define "kubenode#{i}" do |node|
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "kubenode#{i}"
+        vb.memory = 2048
+        vb.cpus = 2
+      end
+      node.vm.hostname = "kubenode#{i}"
+      node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START + i}"
+      node.vm.network "forwarded_port", guest: 22, host: "#{22231 + i}"
     end
   end
 
