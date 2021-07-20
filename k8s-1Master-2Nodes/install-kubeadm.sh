@@ -29,5 +29,6 @@ echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] \
     | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 sudo apt-get update
-sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-get install -y kubelet kubeadm kubectl && echo "kubelet kubeadm kubectl successfully installed"
 sudo apt-mark hold kubelet kubeadm kubectl
+echo "install-kubeadm finished"

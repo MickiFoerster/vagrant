@@ -2,7 +2,6 @@
 # vi:set ft=ruby sw=2 ts=2 sts=2:
 
 # Define the number of master and worker nodes
-# If this number is changed, remember to update setup-hosts.sh script with the new hosts IP details in /etc/hosts of each VM.
 NUM_MASTER_NODE = 1
 NUM_WORKER_NODE = 2
 
@@ -26,20 +25,6 @@ Vagrant.configure("2") do |config|
       master.vm.hostname = "kubemaster#{i}"
       master.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START + i}"
       master.vm.network "forwarded_port", guest: 22, host: "#{22221 + i}"
-      config.vm.provision "shell", inline: <<-SHELL
-        if [ ! -f /etc/kubernetes/kubelet.conf ]; then
-          kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address=192.168.99.101;
-          password=$(openssl rand -base64 32)
-          useradd --home-dir /home/kubeuser --skel /etc/skel/ --create-home --password WCzxM3Qq5OChodHdv2B3R6vlOJcLiXkHZEYpXdusWeo= kubeuser
-          su kubeuser --command="mkdir -p /home/kubeuser/.kube"
-          cp -i /etc/kubernetes/admin.conf /home/kubeuser/.kube/config
-          chown kubeuser:kubeuser /home/kubeuser/.kube/config
-        fi
-        cd /root && \
-          curl https://docs.projectcalico.org/manifests/calico.yaml -O && \
-          chown kubeuser:kubeuser calico.yaml
-        su kubeuser --command="kubectl apply -f calico.yaml"
-      SHELL
     end
   end
 
@@ -64,8 +49,34 @@ Vagrant.configure("2") do |config|
       awk -i inplace  '/^[^#](.*)[ \t]+none[ \t]+swap[ \t]+sw/ { print "#" $0; next; } { print; } ' /etc/fstab
       swapoff -a
   SHELL
+  
+  config.vm.provision "shell", path: "ubuntu/setup-hosts.sh"
 
-  #config.vm.provision "shell", path: "install-docker.sh"
+  config.vm.provision "shell", path: "install-docker.sh"
   config.vm.provision "shell", path: "install-kubeadm.sh"
+
+
+  config.vm.provision "shell", inline: <<-SHELL
+        echo "master provision:"
+        # Check if kube tools are already installed
+        if [ "$(hostname)" == "kubemaster1" -a ! -f /etc/kubernetes/kubelet.conf ]; then
+          echo "kubelet.conf ist not found, so execute 'kubeadm init'"
+          # KUBEADM INIT
+          kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address=192.168.99.101;
+
+          # create user for kubernetes 
+          password=$(openssl rand -base64 32)
+          useradd --shell /bin/bash --home-dir /home/kubeuser --skel /etc/skel/ --create-home --password WCzxM3Qq5OChodHdv2B3R6vlOJcLiXkHZEYpXdusWeo= kubeuser
+          su kubeuser --command="mkdir -p /home/kubeuser/.kube"
+          cp -i /etc/kubernetes/admin.conf /home/kubeuser/.kube/config
+          chown kubeuser:kubeuser /home/kubeuser/.kube/config
+
+          # Install network layer CALICO
+          cd /tmp && \
+            curl https://docs.projectcalico.org/manifests/calico.yaml -O && \
+            chown kubeuser:kubeuser calico.yaml
+          su kubeuser --command="kubectl apply -f calico.yaml && echo CALICO installed successfully"
+        fi
+  SHELL
 
 end
