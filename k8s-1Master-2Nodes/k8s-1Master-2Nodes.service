@@ -1,7 +1,5 @@
 [Unit]
-Description=Wordpress
-Requires=docker.service
-After=docker.service
+Description=Start K8s traning cluster
 
 [Service]
 WorkingDirectory=/github.com/MickiFoerster/vagrant/k8s-1Master-2Nodes
