@@ -1,0 +1,15 @@
+[Unit]
+Description=Wordpress
+Requires=docker.service
+After=docker.service
+
+[Service]
+WorkingDirectory=/github.com/MickiFoerster/vagrant/k8s-1Master-2Nodes
+ExecStart=/usr/bin/vagrant up
+ExecStop=/usr/bin/vagrant halt
+TimeoutStartSec=90
+TimeoutStopSec=180
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
