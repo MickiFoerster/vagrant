@@ -1,0 +1,7 @@
+ubuntu:
+  hosts:
+    k8s-single-node-122-cri-o:
+      ansible_host: localhost
+      ansible_user: vagrant 
+      ansible_port: 2222
+      ansible_ssh_private_key_file: /home/micki/MickiFoerster/vagrant/k8s-single-node/1.22-cri-o/.vagrant/machines/k8s-single-node-122-cri-o/virtualbox/private_key

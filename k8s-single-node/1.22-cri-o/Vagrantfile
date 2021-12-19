@@ -1,0 +1,34 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://vagrantcloud.com/search.
+  config.vm.box = "generic/ubuntu2010"
+  config.vm.define "k8s-single-node-122-cri-o" do |node|
+    node.vm.provider "virtualbox" do |vb|
+      vb.name = "k8s-single-node-122-cri-o"
+      vb.memory = 4096
+      vb.cpus = 2
+    end
+    node.vm.hostname = "k8s-single-node-122-cri-o"
+    node.vm.network :private_network, ip: "192.168.99.200"
+    #node.vm.network "forwarded_port", guest: 22, host: 2222
+    #node.vm.network "forwarded_port", guest: 6443, host: 6443
+  end
+
+  # Install K8s cluster
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "../../../ansible/install-k8s/playbook.yaml"
+    ansible.inventory_path = "hosts.yaml"
+  end
+
+end
