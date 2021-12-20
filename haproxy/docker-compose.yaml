@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+  server8080:
+    image: nginx
+    ports: 
+      - "8080:80"
+    volumes: 
+      - ./html:/usr/share/nginx/html:ro
+  server8081:
+    image: nginx
+    ports: 
+      - "8081:80"
+    volumes: 
+      - ./html:/usr/share/nginx/html:ro
+  server8082:
+    image: nginx
+    ports: 
+      - "8082:80"
+    volumes: 
+      - ./html:/usr/share/nginx/html:ro
+
+  db1-readonly:
+    image: postgres
+    ports:
+      - "15432:5432"
+    volumes: 
+      - ./db-data:/var/lib/postgresql/data
+  db2-readonly:
+    image: postgres
+    ports:
+      - "15433:5432"
+    volumes: 
+      - ./db-data:/var/lib/postgresql/data
